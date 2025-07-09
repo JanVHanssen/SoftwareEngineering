@@ -26,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }} # 🔴 PAT gebruiken voor checkout
 
       - uses: actions/setup-java@v4
         with:
@@ -33,7 +35,7 @@ jobs:
           java-version: "21"
           server-id: github
           server-username: github
-          server-password: ${{ secrets.GITHUB_TOKEN }}
+          server-password: ${{ secrets.PAT_TOKEN }} # 🔴 PAT gebruiken voor Maven auth
 
       - name: Configure Maven settings
         run: |
@@ -46,7 +48,7 @@ jobs:
               <server>
                 <id>github</id>
                 <username>github</username>
-                <password>${{ secrets.GITHUB_TOKEN }}</password>
+                <password>${{ secrets.PAT_TOKEN }}</password>  # 🔴 PAT gebruiken hier
               </server>
             </servers>
             <profiles>

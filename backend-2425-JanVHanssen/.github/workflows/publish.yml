@@ -9,46 +9,37 @@ permissions:
   contents: read
   packages: write
 
+env:
+  PROJECT_DIR: backend-2425-JanVHanssen/janvhanssen-backend
+  MAVEN_SETTINGS: ~/.m2/settings.xml
+
 jobs:
   publish:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Check if PAT_TOKEN is set
-        run: |
-          if [ -z "${{ secrets.PAT_TOKEN }}" ]; then
-            echo "❌ PAT_TOKEN is NOT set"
-            exit 1
-          else
-            echo "✅ PAT_TOKEN is set"
-          fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: "21"
 
-      - name: Configure Maven credentials
+      - name: Configure Maven for GitHub Packages
         run: |
           mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml <<EOF
+          cat > ${{ env.MAVEN_SETTINGS }} <<EOF
           <settings>
             <servers>
               <server>
                 <id>github</id>
-                <username>x-access-token</username>
-                <password>${{ secrets.PAT_TOKEN }}</password>
+                <username>github</username>
+                <password>\${{ secrets.GITHUB_TOKEN }}</password>
               </server>
             </servers>
           </settings>
           EOF
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: "21"
-          distribution: "microsoft"
-
-      - name: Build and Publish to GitHub Packages
-        run: mvn -s ~/.m2/settings.xml -X -e -DskipTests clean deploy
-        working-directory: ./janvhanssen-backend
-
-        # test
+      - name: Build & publish to GitHub Packages
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy

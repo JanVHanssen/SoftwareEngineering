@@ -38,8 +38,8 @@ jobs:
             <servers>
               <server>
                 <id>github</id>
-                <username>x-access-token</username>
-                <password>${{ secrets.PAT_TOKEN }}</password>
+                <username>github</username>
+                <password>\${{ secrets.GITHUB_TOKEN }}</password>
               </server>
             </servers>
           </settings>
@@ -51,7 +51,7 @@ jobs:
             -Dartifact=${GROUP_ID}:${ARTIFACT_ID}:${VERSION}:jar \
             -DrepoUrl=https://maven.pkg.github.com/${OWNER}/${REPO}
 
-          # GROUP_ID met punten → mappen
+          # GROUP_ID met punten → mapstructuur
           GROUP_PATH=$(echo $GROUP_ID | tr '.' '/')
           cp ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar app.jar
 

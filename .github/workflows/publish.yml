@@ -35,7 +35,7 @@ jobs:
           distribution: microsoft
           java-version: "21"
           server-id: github
-          server-username: PAT # Vaste waarde voor GitHub Packages
+          server-username: PAT
           server-password: ${{ secrets.PAT_TOKEN }}
 
       - name: Configure Maven

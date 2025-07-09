@@ -12,6 +12,7 @@ permissions:
 env:
   PROJECT_DIR: backend-2425-JanVHanssen/janvhanssen-backend
   MAVEN_SETTINGS: ~/.m2/settings.xml
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   publish:
@@ -20,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: src
 
       - name: Verify directory structure
@@ -36,7 +37,7 @@ jobs:
           java-version: "21"
           server-id: github
           server-username: PAT
-          server-password: ${{ secrets.PAT_TOKEN }}
+          server-password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Maven
         working-directory: ${{ env.PROJECT_DIR }}
@@ -48,7 +49,7 @@ jobs:
               <server>
                 <id>github</id>
                 <username>PAT</username>
-                <password>${{ secrets.PAT_TOKEN }}</password>
+                <password>${{ secrets.GITHUB_TOKEN }}</password>
               </server>
             </servers>
             <profiles>
@@ -76,7 +77,7 @@ jobs:
 
       - name: Test GitHub Packages access
         run: |
-          curl -u PAT:${{ secrets.PAT_TOKEN }} \
+          curl -u PAT:${{ secrets.GITHUB_TOKEN }} \
             https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }} \
             -v
 
@@ -96,6 +97,6 @@ jobs:
       - name: Verify published package
         run: |
           echo "Checking published version:"
-          curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/users/${{ github.repository_owner }}/packages/maven/${{ env.ARTIFACT_ID }}/versions \
             | jq .

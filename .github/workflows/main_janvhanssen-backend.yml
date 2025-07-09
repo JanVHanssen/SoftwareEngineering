@@ -29,12 +29,17 @@ jobs:
         with:
           distribution: microsoft
           java-version: "21"
+          server-id: github # Koppel automatisch aan Maven settings
+          server-username: github
+          server-password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure Maven credentials
+      - name: Configure Maven settings
         run: |
           mkdir -p ~/.m2
           cat > ~/.m2/settings.xml <<EOF
-          <settings>
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
             <servers>
               <server>
                 <id>github</id>
@@ -42,24 +47,43 @@ jobs:
                 <password>${{ secrets.GITHUB_TOKEN }}</password>
               </server>
             </servers>
+            <profiles>
+              <profile>
+                <id>github</id>
+                <repositories>
+                  <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/${{ env.OWNER }}/${{ env.REPO }}</url>
+                    <releases>
+                      <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                      <enabled>true</enabled>
+                    </snapshots>
+                  </repository>
+                </repositories>
+              </profile>
+            </profiles>
+            <activeProfiles>
+              <activeProfile>github</activeProfile>
+            </activeProfiles>
           </settings>
           EOF
 
       - name: Download JAR from GitHub Packages
         run: |
-          echo "Attempting to download artifact: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
-          mvn -X -B dependency:get \
-            -Dartifact=${GROUP_ID}:${ARTIFACT_ID}:${VERSION}:jar \
-            -DrepositoryId=github \
-            -DrepoUrl=https://maven.pkg.github.com/${OWNER}/${REPO}
+          echo "Attempting to download artifact from GitHub Packages"
+          mvn -X -B org.apache.maven.plugins:maven-dependency-plugin:3.7.0:get \
+            -DremoteRepositories=github::::https://maven.pkg.github.com/${{ env.OWNER }}/${{ env.REPO }} \
+            -Dartifact=${{ env.GROUP_ID }}:${{ env.ARTIFACT_ID }}:${{ env.VERSION }}:jar
 
-          # Debug: Show Maven local repository contents
-          GROUP_PATH=$(echo $GROUP_ID | tr '.' '/')
-          echo "Checking if artifact was downloaded:"
-          ls -lR ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/
+          GROUP_PATH=$(echo ${{ env.GROUP_ID }} | tr '.' '/')
+          echo "Downloaded files:"
+          ls -l ~/.m2/repository/$GROUP_PATH/${{ env.ARTIFACT_ID }}/${{ env.VERSION }}/
 
-          # Copy the JAR file to app.jar
-          cp ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/*.jar app.jar
+          # Copy to app.jar
+          cp ~/.m2/repository/$GROUP_PATH/${{ env.ARTIFACT_ID }}/${{ env.VERSION }}/*.jar app.jar
+          echo "JAR file ready for deployment:"
           ls -l app.jar
 
       - uses: azure/webapps-deploy@v3

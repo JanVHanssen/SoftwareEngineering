@@ -16,7 +16,7 @@
     <!-- === IDENTITEIT VAN DIT PROJECT === -->
     <groupId>be.ucll.se</groupId>
     <artifactId>janvhanssen-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>janvhanssen-backend</name>
     <description>Backend van het Software‑Engineering project</description>
 

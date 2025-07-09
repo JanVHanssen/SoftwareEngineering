@@ -16,7 +16,7 @@ env:
   REPO: SoftwareEngineering
   GROUP_ID: be.ucll.se
   ARTIFACT_ID: janvhanssen-backend
-  VERSION: 0.0.1-SNAPSHOT
+  VERSION: 0.0.1
 
 jobs:
   deploy:

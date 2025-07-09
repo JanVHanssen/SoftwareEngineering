@@ -23,7 +23,7 @@
     <!-- Algemene projectinstellingen  -->
     <properties>
         <java.version>21</java.version>
-        <!-- false is standaard, maar laten staan voor duidelijkheid -->
+         <maven.deploy.uniqueVersion>false</maven.deploy.uniqueVersion>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 

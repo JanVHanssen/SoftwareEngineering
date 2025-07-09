@@ -47,11 +47,12 @@ jobs:
 
       - name: Download JAR from GitHub Packages
         run: |
-          mvn -B dependency:get \
+          mvn -B -U dependency:get \
             -Dartifact=${GROUP_ID}:${ARTIFACT_ID}:${VERSION}:jar \
+            -DrepositoryId=github \
             -DrepoUrl=https://maven.pkg.github.com/${OWNER}/${REPO}
 
-          # GROUP_ID met punten → mapstructuur
+          # GROUP_ID met punten → mappen
           GROUP_PATH=$(echo $GROUP_ID | tr '.' '/')
           cp ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar app.jar
 

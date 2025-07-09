@@ -63,9 +63,9 @@ jobs:
           echo "##[set-output name=version;]${NEW_VERSION}"
 
       - name: Build and publish
-        working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy
+          mvn -B deploy -DskipTests \
+           -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ env.OWNER }}/${{ env.REPO }}
 
       - name: Create git tag
         if: success()

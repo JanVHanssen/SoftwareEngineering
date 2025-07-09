@@ -20,6 +20,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Genereer een uniek versienummer voor snapshots
+      - name: Determine version
+        id: version
+        run: |
+          if [[ ${{ github.ref }} == "refs/heads/main" ]]; then
+            # Voor main branch: gebruik pom.xml versie + timestamp voor snapshots
+            echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)-$(date +%s)" >> $GITHUB_OUTPUT
+          else
+            # Voor feature branches: altijd snapshot
+            echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)-SNAPSHOT" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions/setup-java@v4
         with:
           distribution: microsoft
@@ -42,4 +54,10 @@ jobs:
 
       - name: Build & publish to GitHub Packages
         working-directory: ${{ env.PROJECT_DIR }}
-        run: mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy
+        run: |
+          # Update versie in pom.xml als het een snapshot is
+          if [[ "${{ steps.version.outputs.VERSION }}" == *"-SNAPSHOT" ]]; then
+            mvn -B versions:set -DnewVersion=${{ steps.version.outputs.VERSION }}
+          fi
+
+          mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy

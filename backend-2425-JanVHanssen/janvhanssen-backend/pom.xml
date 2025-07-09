@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-   <groupId>be.ucll.se</groupId>
+   <groupId>com.example</groupId>
 <artifactId>janvhanssen-backend</artifactId>
 <version>0.0.1-SNAPSHOT</version>
 <name>janvhanssen-backend</name>

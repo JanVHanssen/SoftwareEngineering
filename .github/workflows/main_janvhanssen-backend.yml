@@ -14,7 +14,7 @@ env:
   AZURE_WEBAPP_NAME: janvhanssen-backend
   OWNER: JanVHanssen
   REPO: SoftwareEngineering
-  GROUP_ID: be.ucll.se
+  GROUP_ID: com.example
   ARTIFACT_ID: janvhanssen-backend
   VERSION: 0.0.1-SNAPSHOT
 

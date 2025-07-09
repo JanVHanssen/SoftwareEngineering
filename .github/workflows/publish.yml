@@ -16,14 +16,13 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       # ---------------- Checkout ----------------
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # géén 'path:' meer
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ---------------- Controleer structuur ----------------
       - name: Verify directory structure
@@ -32,7 +31,8 @@ jobs:
           ls -la ${{ env.PROJECT_DIR }}/pom.xml || echo "POM not found!"
 
       # ---------------- Java & Maven ----------------
-      - uses: actions/setup-java@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: microsoft
           java-version: "21"
@@ -40,39 +40,41 @@ jobs:
           server-username: ${{ github.actor }}
           server-password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure Maven
+      # ---------------- Maven configureren ----------------
+      - name: Configure Maven settings.xml
         working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           mkdir -p ~/.m2
-          cat > ${{ env.MAVEN_SETTINGS }} <<'EOF'
+          cat > ${{ env.MAVEN_SETTINGS }} <<EOF
           <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
           <servers>
-          <server>
-          <id>github</id>
-          <username>${{ github.actor }}</username>
-          <password>${{ secrets.GITHUB_TOKEN }}</password>
-          </server>
-          </servers>
-          <profiles>
-          <profile>
-          <id>github</id>
-          <repositories>
-          <repository>
-          <id>github</id>
-          <url>https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
-          </repository>
-          </repositories>
-          </profile>
-          </profiles>
-          <activeProfiles>
-          <activeProfile>github</activeProfile>
-          </activeProfiles>
+           <server>
+            <id>github</id>
+            <username>${GITHUB_ACTOR}</username>
+            <password>${GITHUB_TOKEN}</password>
+            <id>github</id>
+            <repositories>
+             <repository>
+             <id>github</id>
+             <url>https://maven.pkg.github.com/${GITHUB_REPOSITORY}</url>
+             <releases><enabled>true</enabled></releases>
+             <snapshots><enabled>true</enabled></snapshots>
+             </repository>
+            </repositories>
+            </profile>
+           </profiles>
+           <activeProfiles>
+           <activeProfile>github</activeProfile>
+           </activeProfiles>
           </settings>
           EOF
+      # ---------------- Test toegang tot GitHub Packages ----------------
       - name: Test GitHub Packages access
         run: |
           curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
@@ -84,17 +86,4 @@ jobs:
         run: |
           BASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           NEW_VERSION="${BASE_VERSION%.*}-$(date +%s)"
-          mvn versions:set -DnewVersion=$NEW_VERSION
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-      # ---------------- Build & Deploy ----------------
-      - name: Build and publish
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy
-
-      - name: Verify published package
-        run: |
-          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/users/${{ github.repository_owner }}/packages/maven/${{ env.ARTIFACT_ID }}/versions \
-            | jq .
+          mvn versions:set -DnewVersion

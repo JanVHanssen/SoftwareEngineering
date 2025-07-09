@@ -12,25 +12,26 @@ permissions:
 env:
   PROJECT_DIR: backend-2425-JanVHanssen/janvhanssen-backend
   MAVEN_SETTINGS: ~/.m2/settings.xml
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      # -------- Checkout --------
+      # ---------------- Checkout ----------------
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # géén path: src meer
+          token: ${{ secrets.GITHUB_TOKEN }} # géén 'path:' meer
 
-      # -------- Structuur checken --------
+      # ---------------- Controleer structuur ----------------
       - name: Verify directory structure
         run: |
           ls -R
           ls -la ${{ env.PROJECT_DIR }}/pom.xml || echo "POM not found!"
 
-      # -------- Java & Maven --------
+      # ---------------- Java & Maven ----------------
       - uses: actions/setup-java@v4
         with:
           distribution: microsoft
@@ -43,7 +44,7 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mkdir -p ~/.m2
-          cat > ${{ env.MAVEN_SETTINGS }} <<EOF
+          cat > ${{ env.MAVEN_SETTINGS }} <<'EOF'
           <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                     xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
@@ -78,7 +79,7 @@ jobs:
           curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
             https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }} -Iv
 
-      # -------- Versie bumpen --------
+      # ---------------- Versie bumpen ----------------
       - name: Set unique version
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
@@ -87,7 +88,7 @@ jobs:
           mvn versions:set -DnewVersion=$NEW_VERSION
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      # -------- Build & deploy --------
+      # ---------------- Build & Deploy ----------------
       - name: Build and publish
         working-directory: ${{ env.PROJECT_DIR }}
         run: |

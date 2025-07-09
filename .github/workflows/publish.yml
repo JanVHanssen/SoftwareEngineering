@@ -20,24 +20,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Genereer een uniek versienummer voor snapshots
       - name: Determine version
         id: version
         run: |
-          if [[ ${{ github.ref }} == "refs/heads/main" ]]; then
-            # Voor main branch: gebruik pom.xml versie + timestamp voor snapshots
-            echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)-$(date +%s)" >> $GITHUB_OUTPUT
+          BASE_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "version=${BASE_VERSION}-$(date +%s)" >> $GITHUB_OUTPUT
           else
-            # Voor feature branches: altijd snapshot
-            echo "VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)-SNAPSHOT" >> $GITHUB_OUTPUT
+            echo "version=${BASE_VERSION}-SNAPSHOT" >> $GITHUB_OUTPUT
           fi
 
       - uses: actions/setup-java@v4
         with:
           distribution: microsoft
           java-version: "21"
+          server-id: github
+          server-username: github
+          server-password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure Maven for GitHub Packages
+      - name: Configure Maven
         run: |
           mkdir -p ~/.m2
           cat > ${{ env.MAVEN_SETTINGS }} <<EOF
@@ -52,12 +53,12 @@ jobs:
           </settings>
           EOF
 
-      - name: Build & publish to GitHub Packages
+      - name: Build & publish
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          # Update versie in pom.xml als het een snapshot is
-          if [[ "${{ steps.version.outputs.VERSION }}" == *"-SNAPSHOT" ]]; then
-            mvn -B versions:set -DnewVersion=${{ steps.version.outputs.VERSION }}
+          # Update version if snapshot
+          if [[ "${{ steps.version.outputs.version }}" == *"-SNAPSHOT"* ]]; then
+            mvn versions:set -DnewVersion=${{ steps.version.outputs.version }}
           fi
 
           mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy

@@ -16,7 +16,7 @@ env:
   REPO: SoftwareEngineering
   GROUP_ID: be.ucll.se
   ARTIFACT_ID: janvhanssen-backend
-  VERSION: 0.0.1-SNAPSHOT
+  VERSION: 0.0.1-SNAPSHOT # blijft snapshot zoals gevraagd
 
 jobs:
   deploy:
@@ -52,9 +52,10 @@ jobs:
             -DrepositoryId=github \
             -DrepoUrl=https://maven.pkg.github.com/${OWNER}/${REPO}
 
-          # GROUP_ID met punten → mappen
+          # punten in GROUP_ID → mappen
           GROUP_PATH=$(echo $GROUP_ID | tr '.' '/')
-          cp ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar app.jar
+          cp ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/*.jar app.jar
+          ls -l app.jar   # ter controle
 
       - uses: azure/webapps-deploy@v3
         with:

@@ -20,17 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Determine version
-        id: version
-        run: |
-          BASE_VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "version=${BASE_VERSION}-$(date +%s)" >> $GITHUB_OUTPUT
-          else
-            echo "version=${BASE_VERSION}-SNAPSHOT" >> $GITHUB_OUTPUT
-          fi
-
-      - uses: actions/setup-java@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: microsoft
           java-version: "21"
@@ -53,12 +44,14 @@ jobs:
           </settings>
           EOF
 
-      - name: Build & publish
+      - name: Determine version
+        id: version
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          # Update version if snapshot
-          if [[ "${{ steps.version.outputs.version }}" == *"-SNAPSHOT"* ]]; then
-            mvn versions:set -DnewVersion=${{ steps.version.outputs.version }}
-          fi
+          BASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=${BASE_VERSION}" >> $GITHUB_OUTPUT
 
+      - name: Build and publish
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
           mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy

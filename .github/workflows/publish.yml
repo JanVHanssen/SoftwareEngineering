@@ -19,11 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # -------- Checkout --------
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: src
+          token: ${{ secrets.GITHUB_TOKEN }} # <– path: src is verwijderd
 
+      # -------- Structuur checken --------
       - name: Verify directory structure
         run: |
           echo "Workspace contents:"
@@ -31,16 +32,17 @@ jobs:
           echo "Checking POM location:"
           ls -la ${{ env.PROJECT_DIR }}/pom.xml || echo "POM not found!"
 
+      # -------- Java & Maven --------
       - uses: actions/setup-java@v4
         with:
           distribution: microsoft
           java-version: "21"
           server-id: github
-          server-username: PAT
+          server-username: ${{ github.actor }} # was 'PAT'
           server-password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Maven
-        working-directory: ${{ env.PROJECT_DIR }}
+        working-directory: ${{ github.workspace }}/${{ env.PROJECT_DIR }}
         run: |
           mkdir -p ~/.m2
           cat > ${{ env.MAVEN_SETTINGS }} <<EOF
@@ -48,7 +50,7 @@ jobs:
             <servers>
               <server>
                 <id>github</id>
-                <username>PAT</username>
+                <username>${{ github.actor }}</username>   <!-- was 'PAT' -->
                 <password>${{ secrets.GITHUB_TOKEN }}</password>
               </server>
             </servers>
@@ -59,12 +61,8 @@ jobs:
                   <repository>
                     <id>github</id>
                     <url>https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}</url>
-                    <releases>
-                      <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                      <enabled>true</enabled>
-                    </snapshots>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
                   </repository>
                 </repositories>
               </profile>
@@ -77,10 +75,11 @@ jobs:
 
       - name: Test GitHub Packages access
         run: |
-          curl -u PAT:${{ secrets.GITHUB_TOKEN }} \
+          curl -u ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} \
             https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }} \
             -v
 
+      # -------- Versie bumpen --------
       - name: Set unique version
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
@@ -89,6 +88,7 @@ jobs:
           mvn versions:set -DnewVersion=$NEW_VERSION
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
+      # -------- Build & deploy --------
       - name: Build and publish
         working-directory: ${{ env.PROJECT_DIR }}
         run: |

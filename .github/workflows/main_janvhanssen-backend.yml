@@ -4,11 +4,13 @@ on:
   workflow_run:
     workflows: ["Publish Package"]
     types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: read
+  actions: read
 
 env:
   AZURE_WEBAPP_NAME: janvhanssen-backend
@@ -29,7 +31,7 @@ jobs:
         with:
           distribution: microsoft
           java-version: "21"
-          server-id: github # Koppel automatisch aan Maven settings
+          server-id: github
           server-username: github
           server-password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -81,13 +83,16 @@ jobs:
           echo "Downloaded files:"
           ls -l ~/.m2/repository/$GROUP_PATH/${{ env.ARTIFACT_ID }}/${{ env.VERSION }}/
 
-          # Copy to app.jar
           cp ~/.m2/repository/$GROUP_PATH/${{ env.ARTIFACT_ID }}/${{ env.VERSION }}/*.jar app.jar
           echo "JAR file ready for deployment:"
           ls -l app.jar
+
+      - name: Azure Login with Publish Profile
+        uses: azure/login@v1
+        with:
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CD57E2473E7D4D119249C4C5D90C1BA1 }}
 
       - uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: app.jar
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CD57E2473E7D4D119249C4C5D90C1BA1 }}

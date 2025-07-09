@@ -5,8 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
-  PROJECT_DIR: backend-2425-JanVHanssen/janvhanssen-backend # 🔴 Pas dit aan naar jouw pad
+  PROJECT_DIR: backend-2425-JanVHanssen/janvhanssen-backend
   MAVEN_SETTINGS: ~/.m2/settings.xml
 
 jobs:
@@ -17,18 +21,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
-          path: src # 🔴 Checkout in een subdirectory
+          path: src
+
+      - name: Verify directory structure
+        run: |
+          echo "Workspace contents:"
+          ls -R
+          echo "Checking POM location:"
+          ls -la ${{ env.PROJECT_DIR }}/pom.xml || echo "POM not found!"
 
       - uses: actions/setup-java@v4
         with:
           distribution: microsoft
           java-version: "21"
           server-id: github
-          server-username: ${{ github.actor }}
+          server-username: PAT # Vaste waarde voor GitHub Packages
           server-password: ${{ secrets.PAT_TOKEN }}
 
       - name: Configure Maven
-        working-directory: ${{ env.PROJECT_DIR }} # 🔴 Werk in de juiste directory
+        working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mkdir -p ~/.m2
           cat > ${{ env.MAVEN_SETTINGS }} <<EOF
@@ -36,21 +47,55 @@ jobs:
             <servers>
               <server>
                 <id>github</id>
-                <username>${{ github.actor }}</username>
+                <username>PAT</username>
                 <password>${{ secrets.PAT_TOKEN }}</password>
               </server>
             </servers>
+            <profiles>
+              <profile>
+                <id>github</id>
+                <repositories>
+                  <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}</url>
+                    <releases>
+                      <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                      <enabled>true</enabled>
+                    </snapshots>
+                  </repository>
+                </repositories>
+              </profile>
+            </profiles>
+            <activeProfiles>
+              <activeProfile>github</activeProfile>
+            </activeProfiles>
           </settings>
           EOF
 
-      - name: Determine version
-        id: version
-        working-directory: ${{ env.PROJECT_DIR }} # 🔴 Werk in de juiste directory
+      - name: Test GitHub Packages access
+        run: |
+          curl -u PAT:${{ secrets.PAT_TOKEN }} \
+            https://maven.pkg.github.com/${{ github.repository_owner }}/${{ github.event.repository.name }} \
+            -v
+
+      - name: Set unique version
+        working-directory: ${{ env.PROJECT_DIR }}
         run: |
           BASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "version=${BASE_VERSION}" >> $GITHUB_OUTPUT
+          NEW_VERSION="${BASE_VERSION%.*}-$(date +%s)"
+          mvn versions:set -DnewVersion=$NEW_VERSION
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build and publish
-        working-directory: ${{ env.PROJECT_DIR }} # 🔴 Werk in de juiste directory
+        working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mvn -B -s ${{ env.MAVEN_SETTINGS }} -DskipTests clean deploy
+
+      - name: Verify published package
+        run: |
+          echo "Checking published version:"
+          curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+            https://api.github.com/users/${{ github.repository_owner }}/packages/maven/${{ env.ARTIFACT_ID }}/versions \
+            | jq .

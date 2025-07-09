@@ -47,15 +47,20 @@ jobs:
 
       - name: Download JAR from GitHub Packages
         run: |
-          mvn -B -U dependency:get \
+          echo "Attempting to download artifact: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
+          mvn -X -B dependency:get \
             -Dartifact=${GROUP_ID}:${ARTIFACT_ID}:${VERSION}:jar \
             -DrepositoryId=github \
             -DrepoUrl=https://maven.pkg.github.com/${OWNER}/${REPO}
 
-          # punten in GROUP_ID → mappen
+          # Debug: Show Maven local repository contents
           GROUP_PATH=$(echo $GROUP_ID | tr '.' '/')
+          echo "Checking if artifact was downloaded:"
+          ls -lR ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/
+
+          # Copy the JAR file to app.jar
           cp ~/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/*.jar app.jar
-          ls -l app.jar   # ter controle
+          ls -l app.jar
 
       - uses: azure/webapps-deploy@v3
         with:

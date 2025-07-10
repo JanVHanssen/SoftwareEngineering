@@ -90,7 +90,7 @@ jobs:
       - name: Azure Login with Publish Profile
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CD57E2473E7D4D119249C4C5D90C1BA1 }}
+          creds: ${{ secrets.AZURE_PUBLISH_PROFILE }}
 
       - uses: azure/webapps-deploy@v3
         with:

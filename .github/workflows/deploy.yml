@@ -87,7 +87,7 @@ jobs:
           echo "JAR file ready for deployment:"
           ls -l app.jar
 
-      - name: Azure WebApp Deploy
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}

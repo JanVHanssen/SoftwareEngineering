@@ -72,7 +72,7 @@ jobs:
            <activeProfile>github</activeProfile>
            </activeProfiles>
            </settings>
-                       EOF
+           EOF
 
       # ---------------- Test toegang tot GitHub Packages ----------------
       - name: Test GitHub Packages access

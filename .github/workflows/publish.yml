@@ -84,8 +84,8 @@ jobs:
       - name: Set unique version
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          BASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -DforceStdout)
-          echo "Huidige versie: $BASE_VERSION"
-          NEW_VERSION="${BASE_VERSION%.*}-$(date +%s)"
-          echo "Nieuwe versie: $NEW_VERSION"
-           mvn versions:set -DnewVersion=$NEW_VERSION
+          echo "Huidige directory: $(pwd)"
+          echo "Bestanden in directory:"
+          ls -la
+          echo "Probeer projectversie op te halen..."
+          mvn help:evaluate -Dexpression=project.version -DforceStdout -X

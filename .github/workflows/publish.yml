@@ -42,38 +42,36 @@ jobs:
 
       # ---------------- Maven configureren ----------------
       - name: Configure Maven settings.xml
-        working-directory: ${{ env.PROJECT_DIR }}
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           mkdir -p ~/.m2
-          cat > ${{ env.MAVEN_SETTINGS }} <<EOF
+          cat > ~/.m2/settings.xml <<EOF
           <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
           <servers>
-           <server>
-            <id>github</id>
-            <username>${GITHUB_ACTOR}</username>
-            <password>${GITHUB_TOKEN}</password>
-            <id>github</id>
-            <repositories>
-             <repository>
-             <id>github</id>
-             <url>https://maven.pkg.github.com/${GITHUB_REPOSITORY}</url>
-             <releases><enabled>true</enabled></releases>
-             <snapshots><enabled>true</enabled></snapshots>
-             </repository>
-            </repositories>
-            </profile>
-           </profiles>
-           <activeProfiles>
-           <activeProfile>github</activeProfile>
-           </activeProfiles>
+          <server>
+          <id>github</id>
+          <username>${{ github.actor }}</username>
+           </servers>
+          <profiles>
+          <profile>
+          <id>github</id>
+          <repositories>
+           <repository>
+           <id>github</id>
+           <url>https://maven.pkg.github.com/${{ github.repository }}</url>
+           <releases><enabled>true</enabled></releases>
+           <snapshots><enabled>true</enabled></snapshots>
+           </repository>
+          </repositories>
+          </profile>
+          </profiles>
+          <activeProfiles>
+          <activeProfile>github</activeProfile>
+          </activeProfiles>
           </settings>
           EOF
+
       # ---------------- Test toegang tot GitHub Packages ----------------
       - name: Test GitHub Packages access
         run: |

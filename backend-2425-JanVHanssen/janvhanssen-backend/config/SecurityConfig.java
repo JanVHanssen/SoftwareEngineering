@@ -16,7 +16,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors() // ❗ Zorg dat CORS actief is
+                .cors()
                 .and()
                 .csrf().disable()
                 .authorizeHttpRequests(authz -> authz
@@ -28,7 +28,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://frontend-2425-janvhanssen.vercel.app")); // <-- DIT GEBRUIKEN
+        config.setAllowedOrigins(List.of("https://frontend-2425-janvhanssen.vercel.app")); // <-- Belangrijk!
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -37,5 +37,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 }

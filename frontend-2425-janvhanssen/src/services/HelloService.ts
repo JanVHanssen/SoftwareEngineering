@@ -1,37 +1,27 @@
 export class HelloService {
   static async fetchHello(): Promise<string> {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) throw new Error("API URL is not configured");
-      
-      console.log("Fetching from:", `${apiUrl}/hello`);
-      
-      const res = await fetch(`${apiUrl}/hello`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hello`, {
         method: 'GET',
+        mode: 'cors',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
-      
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("Backend error response:", errorData);
-        throw new Error(`HTTP error! status: ${res.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const data = await res.json();
-      console.log("Received data:", data);
-      
-      if (!data.message) {
-        throw new Error("Invalid response format - missing message field");
-      }
-      
+
+      const data = await response.json();
       return data.message;
     } catch (error) {
-      console.error("Error fetching hello:", error);
-      throw new Error("Failed to fetch greeting: " + (error instanceof Error ? error.message : String(error)));
+      console.error('Fetch error:', error);
+      throw error;
     }
   }
 }

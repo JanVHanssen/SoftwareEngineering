@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-
 @CrossOrigin(origins = "https://frontend-2425-janvhanssen.vercel.app", allowCredentials = "true")
-
 @RequestMapping("/hello")
 public class GreetingController {
 

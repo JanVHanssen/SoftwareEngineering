@@ -29,30 +29,21 @@ public class SecurityConfig {
      * @return De geconfigureerde SecurityFilterChain.
      * @throws Exception Als er een fout optreedt tijdens de configuratie.
      */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                // Schakel CSRF (Cross-Site Request Forgery) uit. Essentieel voor stateless APIs
-                // die door een frontend worden gebruikt, omdat er geen sessiecookies zijn.
-                .csrf(csrf -> csrf.disable())
+   @Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .cors(withDefaults())
+        .authorizeHttpRequests(auth -> auth
+            // Expliciet OPTIONS requests toestaan zonder authenticatie
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- VOEG DEZE LIJN TOE
+            // Alle andere requests toestaan (zoals je al had)
+            .anyRequest().permitAll()
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-                // Activeer CORS-configuratie met de standaardinstellingen (die we hieronder in de corsConfigurationSource bean definiëren).
-                .cors(withDefaults())
-
-                // Configureer autorisatieregels.
-                .authorizeHttpRequests(auth -> auth
-                        // Sta voor nu alle requests toe. Dit is handig voor development.
-                        // Later kun je dit specifieker maken, bv. .requestMatchers("/api/public/**").permitAll()
-                        // en .requestMatchers("/api/private/**").authenticated()
-                        .anyRequest().permitAll()
-                )
-
-                // Configureer sessiebeheer. Voor een REST API is STATELESS ideaal.
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        return http.build();
-    }
-
+    return http.build();
+}
     /**
      * Definieert de specifieke CORS-regels voor de applicatie.
      * Deze bean wordt automatisch opgepikt door de .cors(withDefaults()) configuratie hierboven.

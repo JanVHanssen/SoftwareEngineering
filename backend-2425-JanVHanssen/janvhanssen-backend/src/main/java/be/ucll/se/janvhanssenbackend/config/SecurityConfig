@@ -1,0 +1,83 @@
+package be.ucll.se.janvhanssenbackend.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
+
+/**
+ * Configuratieklasse voor Spring Security.
+ * Deze klasse stelt de basisbeveiliging en CORS-regels in voor de applicatie.
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    /**
+     * Definieert de security filter chain die alle HTTP-requests onderschept.
+     * @param http Het HttpSecurity object om te configureren.
+     * @return De geconfigureerde SecurityFilterChain.
+     * @throws Exception Als er een fout optreedt tijdens de configuratie.
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                // Schakel CSRF (Cross-Site Request Forgery) uit. Essentieel voor stateless APIs
+                // die door een frontend worden gebruikt, omdat er geen sessiecookies zijn.
+                .csrf(csrf -> csrf.disable())
+
+                // Activeer CORS-configuratie met de standaardinstellingen (die we hieronder in de corsConfigurationSource bean definiëren).
+                .cors(withDefaults())
+
+                // Configureer autorisatieregels.
+                .authorizeHttpRequests(auth -> auth
+                        // Sta voor nu alle requests toe. Dit is handig voor development.
+                        // Later kun je dit specifieker maken, bv. .requestMatchers("/api/public/**").permitAll()
+                        // en .requestMatchers("/api/private/**").authenticated()
+                        .anyRequest().permitAll()
+                )
+
+                // Configureer sessiebeheer. Voor een REST API is STATELESS ideaal.
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
+    }
+
+    /**
+     * Definieert de specifieke CORS-regels voor de applicatie.
+     * Deze bean wordt automatisch opgepikt door de .cors(withDefaults()) configuratie hierboven.
+     * @return De bron voor de CORS-configuratie.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Hier zet je de URL van je Vercel frontend.
+        configuration.setAllowedOrigins(List.of("https://frontend-2425-janvhanssen.vercel.app"));
+        
+        // Sta alle gangbare HTTP-methodes toe.
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        
+        // Sta specifieke headers toe die je frontend zou kunnen sturen.
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        
+        // Essentieel als je frontend credentials (zoals cookies of auth headers) meestuurt.
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Pas deze CORS-configuratie toe op alle paden in de applicatie.
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
+    }
+}

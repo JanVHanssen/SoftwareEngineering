@@ -2,25 +2,35 @@ package be.ucll.se.janvhanssenbackend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // Import HttpMethod
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter; // Nieuwe import voor filter volgorde
+import org.springframework.web.cors.CorsConfiguration; // Nieuwe import
+import org.springframework.web.cors.CorsConfigurationSource; // Nieuwe import
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // Nieuwe import
+import org.springframework.web.filter.CorsFilter; // Nieuwe import
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class class SecurityConfig {
+public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
-
+                .csrf(csrf -> csrf.disable()) // CSRF uitschakelen
+                // Belangrijk: expliciet de CorsFilter toevoegen en ZORGEN DAT DEZE VOORAAN STAAT
+                // We voegen de CorsFilter toe VÓÓR BasicAuthenticationFilter, wat vroeg in de keten is.
+                .addFilterBefore(corsFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        // Explicitly permit all OPTIONS requests before any other authorization rules
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- KEEP THIS LINE
-                        // Allow all other requests for now (for development)
+                        // Alle OPTIONS requests toestaan zonder authenticatie of autorisatie
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Alle andere requests toestaan (voor development)
                         .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -28,5 +38,18 @@ public class class SecurityConfig {
         return http.build();
     }
 
-
+    // Definieer de CorsFilter bean
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        // Je Vercel frontend URL
+        config.setAllowedOrigins(List.of("https://frontend-2425-janvhanssen.vercel.app"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")); // HEAD toevoegen voor de zekerheid
+        // ALLE HEADERS TOESTAAN, inclusief 'Content-Type', 'Accept-Encoding', etc.
+        config.setAllowedHeaders(Arrays.asList("*")); // Gebruik * om ALLE headers toe te staan.
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
 }

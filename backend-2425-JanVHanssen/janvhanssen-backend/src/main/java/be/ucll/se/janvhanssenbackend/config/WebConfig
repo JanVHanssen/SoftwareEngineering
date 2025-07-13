@@ -9,10 +9,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Apply CORS to all paths
-                .allowedOrigins("https://frontend-2425-janvhanssen.vercel.app") // Your frontend origin
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow all common methods, including OPTIONS
-                .allowedHeaders("*") // Allow all headers
-                .allowCredentials(true); // Allow credentials if your frontend sends cookies/auth headers
+        registry.addMapping("/**")
+                .allowedOrigins("https://frontend-2425-janvhanssen.vercel.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                // Voeg 'Accept-Encoding' expliciet toe aan de toegestane headers
+                .allowedHeaders("Authorization", "Content-Type", "Accept", "Accept-Encoding") // <-- AANGEPAST
+                .allowCredentials(true);
     }
 }

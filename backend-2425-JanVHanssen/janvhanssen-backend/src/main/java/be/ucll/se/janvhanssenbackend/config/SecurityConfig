@@ -15,60 +15,37 @@ import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-/**
- * Configuratieklasse voor Spring Security.
- * Deze klasse stelt de basisbeveiliging en CORS-regels in voor de applicatie.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Definieert de security filter chain die alle HTTP-requests onderschept.
-     * @param http Het HttpSecurity object om te configureren.
-     * @return De geconfigureerde SecurityFilterChain.
-     * @throws Exception Als er een fout optreedt tijdens de configuratie.
-     */
-   @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(withDefaults())
-        .authorizeHttpRequests(auth -> auth
-            // Expliciet OPTIONS requests toestaan zonder authenticatie
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- VOEG DEZE LIJN TOE
-            // Alle andere requests toestaan (zoals je al had)
-            .anyRequest().permitAll()
-        )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(withDefaults())
+            .authorizeHttpRequests(auth -> auth
+                // Expliciet OPTIONS requests toestaan voor alle paden ZONDER AUTHENTICATIE
+                // Dit MOET voor de anyRequest().permitAll() regel komen.
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <-- DEZE LIJN IS CRUCIAAL
+                // Alle andere requests toestaan
+                .anyRequest().permitAll()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-    return http.build();
-}
-    /**
-     * Definieert de specifieke CORS-regels voor de applicatie.
-     * Deze bean wordt automatisch opgepikt door de .cors(withDefaults()) configuratie hierboven.
-     * @return De bron voor de CORS-configuratie.
-     */
+        return http.build();
+    }
+
+    // Je CorsConfigurationSource bean is verder correct
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Hier zet je de URL van je Vercel frontend.
         configuration.setAllowedOrigins(List.of("https://frontend-2425-janvhanssen.vercel.app"));
-        
-        // Sta alle gangbare HTTP-methodes toe.
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        
-        // Sta specifieke headers toe die je frontend zou kunnen sturen.
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
-        
-        // Essentieel als je frontend credentials (zoals cookies of auth headers) meestuurt.
         configuration.setAllowCredentials(true);
-        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Pas deze CORS-configuratie toe op alle paden in de applicatie.
         source.registerCorsConfiguration("/**", configuration);
-        
         return source;
     }
 }

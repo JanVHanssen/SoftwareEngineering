@@ -29,8 +29,8 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          distribution: microsoft
+          java-version: "21"
           server-id: github
           server-username: ${{ github.actor }}
           server-password: ${{ secrets.GITHUB_TOKEN }}

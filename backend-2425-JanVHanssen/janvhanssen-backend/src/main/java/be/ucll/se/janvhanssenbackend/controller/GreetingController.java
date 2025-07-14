@@ -18,6 +18,7 @@ public class GreetingController {
 
     @GetMapping
     public Greeting getGreeting() {
+        System.out.println("HELLO endpoint aangeroepen");
         return service.getGreetingById(1L);
     }
 }

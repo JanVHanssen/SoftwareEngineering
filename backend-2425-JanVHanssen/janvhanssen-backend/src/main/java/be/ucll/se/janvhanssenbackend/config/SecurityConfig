@@ -24,7 +24,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Gebruik dezelfde CORS-config als de CorsFilter
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
             
             .authorizeHttpRequests(auth -> auth
              .anyRequest().permitAll()
@@ -37,13 +38,14 @@ public class SecurityConfig {
     }
 
     
-Bean
+
+@Bean
 CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowCredentials(true);
-    config.setAllowedOrigins(List.of(
-     "https://frontend-2425-janvhanssen.vercel.app",
-      "http://localhost:3000"  // Voor lokale ontwikkeling
+   CorsConfiguration config = new CorsConfiguration();
+   config.setAllowCredentials(true);
+   config.setAllowedOrigins(List.of(
+    "https://frontend-2425-janvhanssen.vercel.app",
+    "http://localhost:3000"  // optioneel voor lokaal testen
     ));
     config.setAllowedMethods(List.of("GET", "POST", "PATCH", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));

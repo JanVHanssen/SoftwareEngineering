@@ -23,33 +23,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF uitschakelen
-                // Belangrijk: expliciet de CorsFilter toevoegen en ZORGEN DAT DEZE VOORAAN STAAT
-                // We voegen de CorsFilter toe VÓÓR BasicAuthenticationFilter, wat vroeg in de keten is.
-                .addFilterBefore(corsFilter(), BasicAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> auth
-                        // Alle OPTIONS requests toestaan zonder authenticatie of autorisatie
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Alle andere requests toestaan (voor development)
-                        .anyRequest().permitAll()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Gebruik dezelfde CORS-config als de CorsFilter
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/hello").permitAll()  // Expliciet toestaan
+                .anyRequest().authenticated()  // Vergrendel andere endpoints
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .httpBasic(withDefaults());  // Voor debug (tijdelijk)
 
         return http.build();
     }
 
-    // Definieer de CorsFilter bean
     @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        // Je Vercel frontend URL
-        config.setAllowedOrigins(List.of("https://frontend-2425-janvhanssen.vercel.app"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")); // HEAD toevoegen voor de zekerheid
-        // ALLE HEADERS TOESTAAN, inclusief 'Content-Type', 'Accept-Encoding', etc.
-        config.setAllowedHeaders(Arrays.asList("*")); // Gebruik * om ALLE headers toe te staan.
+        config.setAllowedOrigins(List.of(
+            "https://frontend-2425-janvhanssen.vercel.app",
+            "http://localhost:3000"  // Voor lokale ontwikkeling
+        ));
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));  // Belangrijk voor frontend
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        return source;
     }
 }

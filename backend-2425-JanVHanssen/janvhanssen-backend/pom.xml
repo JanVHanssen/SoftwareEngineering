@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,13 +14,13 @@
     <!-- === IDENTITEIT VAN DIT PROJECT === -->
     <groupId>be.ucll.se</groupId>
     <artifactId>janvhanssen-backend</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <name>janvhanssen-backend</name>
     <description>Backend van het Software‑Engineering project</description>
 
     <!-- Algemene projectinstellingen  -->
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
          <maven.deploy.uniqueVersion>false</maven.deploy.uniqueVersion>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
@@ -116,6 +114,33 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-webapp-maven-plugin</artifactId>
+                <version>2.13.0</version>
+                <configuration>
+                    <schemaVersion>v2</schemaVersion>
+                    <resourceGroup>janvhanssen-backend-1752469998509-rg</resourceGroup>
+                    <appName>janvhanssen-backend-1752469998509</appName>
+                    <pricingTier>F1</pricingTier> 
+                     <region>westeurope</region>
+                    <runtime>
+                        <os>Linux</os>
+                        <javaVersion>Java 17</javaVersion>
+                        <webContainer>Java SE</webContainer>
+                    </runtime>
+                    <deployment>
+                        <resources>
+                            <resource>
+                                <directory>${project.basedir}/target</directory>
+                                <includes>
+                                    <include>*.jar</include>
+                                </includes>
+                            </resource>
+                        </resources>
+                    </deployment>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -25,11 +25,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Gebruik dezelfde CORS-config als de CorsFilter
+            
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/hello").permitAll()  // Expliciet toestaan
-                .anyRequest().authenticated()  // Vergrendel andere endpoints
-            )
+             .anyRequest().permitAll()
+)
+
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .httpBasic(withDefaults());  // Voor debug (tijdelijk)
 

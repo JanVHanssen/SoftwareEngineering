@@ -21,6 +21,8 @@
     <!-- Algemene projectinstellingen  -->
     <properties>
         <java.version>17</java.version>
+         <maven.compiler.source>17</maven.compiler.source>
+         <maven.compiler.target>17</maven.compiler.target>
          <maven.deploy.uniqueVersion>false</maven.deploy.uniqueVersion>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>

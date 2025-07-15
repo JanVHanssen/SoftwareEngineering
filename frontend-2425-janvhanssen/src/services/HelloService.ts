@@ -3,13 +3,10 @@ export class HelloService {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hello`, {
         method: 'GET',
-        // mode: 'cors', // Verwijder dit (Next.js handelt dit automatisch af)
-        credentials: 'same-origin', // Wijzig van 'include' naar 'same-origin'
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        cache: 'no-store' // Voeg toe om caching problemen te voorkomen
+        // credentials: 'include' // Alleen als backend met cookies werkt
       });
 
       if (!response.ok) {

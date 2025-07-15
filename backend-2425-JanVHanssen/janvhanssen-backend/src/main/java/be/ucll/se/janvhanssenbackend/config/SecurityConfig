@@ -2,18 +2,14 @@ package be.ucll.se.janvhanssenbackend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter; // Nieuwe import voor filter volgorde
-import org.springframework.web.cors.CorsConfiguration; // Nieuwe import
-import org.springframework.web.cors.CorsConfigurationSource; // Nieuwe import
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // Nieuwe import
-import org.springframework.web.filter.CorsFilter; // Nieuwe import
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -25,34 +21,25 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-            
-            .authorizeHttpRequests(auth -> auth
-             .anyRequest().permitAll()
-)
-
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
         return http.build();
     }
 
-    
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of(
+            "https://frontend-2425-janvhanssen.vercel.app",
+            "http://localhost:3000" // alleen voor lokaal testen
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
 
-@Bean
-CorsConfigurationSource corsConfigurationSource() {
-   CorsConfiguration config = new CorsConfiguration();
-   config.setAllowCredentials(true);
-   config.setAllowedOrigins(List.of(
-    "https://frontend-2425-janvhanssen.vercel.app",
-    "http://localhost:3000"  // optioneel voor lokaal testen
-    ));
-    config.setAllowedMethods(List.of("GET", "POST", "PATCH", "OPTIONS"));
-    config.setAllowedHeaders(List.of("*"));
-    config.setExposedHeaders(List.of("Authorization"));
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return source;
-}
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 }

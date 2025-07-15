@@ -1,18 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/hello",
-      "destination": "https://janvhanssen-backend-bzbsewewaqdhbjcx.westeurope-01.azurewebsites.net/hello"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/hello",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
-      ]
+      "source": "/api/:path*",
+      "destination": "https://janvhanssen-backend-bzbsewewaqdhbjcx.westeurope-01.azurewebsites.net/:path*"
     }
   ]
 }

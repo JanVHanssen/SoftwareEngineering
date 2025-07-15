@@ -6,9 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/hello")
-@CrossOrigin(origins = "*", methods = { RequestMethod.GET,
-        RequestMethod.OPTIONS }, // Voeg OPTIONS toe voor preflight
-        allowedHeaders = "*", maxAge = 3600)
+@CrossOrigin(origins = "*")
 public class GreetingController {
     private final GreetingService service;
 

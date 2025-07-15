@@ -29,6 +29,9 @@ public class GreetingController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
 
-        return ResponseEntity.ok("Cron job executed successfully");
+        return ResponseEntity.ok()
+                .header("Access-Control-Allow-Origin", "https://frontend-2425-janvhanssen.vercel.app")
+                .body("Cron job executed successfully");
     }
+
 }

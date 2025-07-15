@@ -1,20 +1,17 @@
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
-    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and()  // Activeer CORS vóór security
-            .csrf().disable() // Disable CSRF voor API's
+            .cors().and()  // Activeer CORS
+            .csrf().disable() // CSRF uitschakelen voor APIs
             .authorizeRequests()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Laat preflight requests door
-                .anyRequest().authenticated(); // Pas aan naar je behoeften
-        
+                .anyRequest().permitAll(); // Alles toestaan (pas later aan)
         return http.build();
     }
 }

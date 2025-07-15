@@ -23,15 +23,4 @@ public class GreetingController {
         return service.getGreetingById(1L);
     }
 
-    @PostMapping("/api/cronjob")
-    public ResponseEntity<String> handleCronJob(@RequestHeader("Authorization") String authHeader) {
-        if (!authHeader.equals("Bearer " + System.getenv("CRON_SECRET"))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
-
-        return ResponseEntity.ok()
-                .header("Access-Control-Allow-Origin", "https://frontend-2425-janvhanssen.vercel.app")
-                .body("Cron job executed successfully");
-    }
-
 }

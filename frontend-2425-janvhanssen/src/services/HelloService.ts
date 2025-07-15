@@ -1,12 +1,12 @@
 export class HelloService {
   static async fetchHello(): Promise<string> {
     try {
+      // Gebruik NEXT_PUBLIC_API_URL die nu '/api' is
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hello`, {
-  method: 'GET',
-  headers: {
-    'Accept': 'application/json'
-  }
-
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
 
       if (!response.ok) {

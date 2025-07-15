@@ -2,11 +2,11 @@ export class HelloService {
   static async fetchHello(): Promise<string> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hello`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        },
-        // credentials: 'include' // Alleen als backend met cookies werkt
+  method: 'GET',
+  headers: {
+    'Accept': 'application/json'
+  }
+
       });
 
       if (!response.ok) {

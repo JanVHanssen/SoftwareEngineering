@@ -1,10 +1,5 @@
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,12 +10,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors().and()
+            .csrf(csrf -> csrf.disable())   // CSRF uit, want API gebruikt
+            .cors().and()                   // CORS aanzetten
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // OPTIONS altijd toestaan
-                .requestMatchers(HttpMethod.GET, "/hello").permitAll()  // GET op /hello toestaan
-                .anyRequest().authenticated() // of permitAll() als je alles open wil zetten
+                .anyRequest().permitAll()  // andere requests open, of stel hier jouw auth in
             );
         return http.build();
     }

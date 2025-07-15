@@ -2,14 +2,14 @@ export class HelloService {
   static async fetchHello(): Promise<string> {
     try {
       const response = await fetch(
-        "https://janvhanssen-backend-bzbsewewaqdhbjcx.westeurope-01.azurewebsites.net/hello", 
+        "https://janvhanssen-backend-bzbsewewaqdhbjcx.westeurope-01.azurewebsites.net/hello",
         {
           method: "GET",
           headers: { 
             "Accept": "application/json",
-            "Content-Type": "application/json",
-             "Access-Control-Allow-Origin" : "*"
-          }
+            "Content-Type": "application/json"
+          },
+          credentials: 'include' // alleen als je cookies of credentials wilt meesturen
         }
       );
 

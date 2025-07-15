@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/hello")
-@CrossOrigin(origins = "*")
 public class GreetingController {
     private final GreetingService service;
 

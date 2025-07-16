@@ -6,26 +6,32 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        logger.info("Configuring SecurityFilterChain with CORS");
         http
             .csrf(csrf -> csrf.disable()) // CSRF uit, want API
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Gebruik custom CORS-config
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS altijd toestaan
-                .anyRequest().permitAll() // Andere requests open (pas dit aan als je authenticatie nodig hebt)
+                .anyRequest().permitAll() // Andere requests open
             );
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        logger.info("CORS configuration loaded for origins: https://frontend-2425-janvhanssen.vercel.app, http://localhost:3000");
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("https://frontend-2425-janvhanssen.vercel.app"); // Exacte frontend-URL
+        configuration.addAllowedOrigin("https://frontend-2425-janvhanssen.vercel.app"); // Exacte Vercel-URL
         configuration.addAllowedOrigin("http://localhost:3000"); // Voor lokale ontwikkeling
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.Arrays.asList("*"));

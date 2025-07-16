@@ -3,6 +3,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -10,12 +13,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())   // CSRF uit, want API gebruikt
-            .cors().and()                   // CORS aanzetten
+            .csrf(csrf -> csrf.disable()) // CSRF uit, want API
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Gebruik custom CORS-config
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // OPTIONS altijd toestaan
-                .anyRequest().permitAll()  // andere requests open, of stel hier jouw auth in
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS altijd toestaan
+                .anyRequest().permitAll() // Andere requests open (pas dit aan als je authenticatie nodig hebt)
             );
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("https://frontend-2425-janvhanssen.vercel.app"); // Exacte frontend-URL
+        configuration.addAllowedOrigin("http://localhost:3000"); // Voor lokale ontwikkeling
+        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+        configuration.setAllowCredentials(true); // Nodig voor credentials: 'include'
+        configuration.setMaxAge(3600L); // Cache preflight requests voor 1 uur
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

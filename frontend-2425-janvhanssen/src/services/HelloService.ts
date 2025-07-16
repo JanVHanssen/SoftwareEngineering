@@ -8,8 +8,7 @@ export class HelloService {
           headers: { 
             "Accept": "application/json",
             "Content-Type": "application/json"
-          },
-          credentials: 'include' // alleen als je cookies of credentials wilt meesturen
+          }
         }
       );
 
